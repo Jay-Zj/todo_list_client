@@ -1,0 +1,19 @@
+.App {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 400px;
+  margin: 0 auto;
+}
+.Search,
+.List {
+  width: 400px;
+}
+.List {
+  /* margin-top: 60px; */
+}
+.Wait,
+.Done {
+  margin-top: 20px;
+}

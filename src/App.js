@@ -1,19 +1,22 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { Input, List, Button, Typography, Space, Divider } from "antd";
+import style from "./app.module.css";
 import axios from "axios";
+const { Search } = Input;
+
 function App() {
   const [todoItems, setTodoItems] = useState([]);
   const inputRef = useRef(null);
-
   useEffect(() => {
     axios.get("http://localhost:8000/items").then((res) => {
       setTodoItems([...res.data]);
     });
   }, []);
   //添加事件
-  const addItem = () => {
+  const addItem = (value) => {
     const newItem = {
-      id: todoItems.length + 1,
-      value: inputRef.current.value,
+      id: todoItems.length,
+      value: value,
       done: false,
       delete: false,
     };
@@ -22,7 +25,6 @@ function App() {
         todoItem: newItem,
       })
       .then((res) => {
-        console.log(res, "====");
         setTodoItems([...res.data]);
       });
   };
@@ -42,28 +44,73 @@ function App() {
       });
   };
 
+  const hasChecked = (item) => {
+    axios
+      .put("http://localhost:8000/items", {
+        id: item.id,
+      })
+      .then((res) => {
+        axios.get("http://localhost:8000/items").then((res) => {
+          setTodoItems([...res.data]);
+        });
+      });
+  };
+
   return (
-    <div className="App">
+    <div className={style.App}>
       <h1>TODO-LIST</h1>
-      <div>
-        <input type="text" placeholder="请添加" ref={inputRef}></input>
-        <button type="submit" onClick={addItem}>
-          添加
-        </button>
-      </div>
-      <ul>
-        {todoItems &&
-          todoItems.map((item) => {
-            return (
-              !item.delete && (
-                <li key={item.id}>
-                  <label>{item.value}</label>
-                  <button onClick={() => delItem(item)}>删除</button>
-                </li>
-              )
-            );
-          })}
-      </ul>
+      <Search
+        ref={inputRef}
+        className={style.Search}
+        placeholder="请输入......"
+        enterButton="添加"
+        size="large"
+        onSearch={addItem}
+      />
+      <Divider orientation="left" style={{ width: "400px" }}>
+        代办事项
+      </Divider>
+      <List
+        className={style.List}
+        bordered
+        dataSource={todoItems}
+        renderItem={(item, index) =>
+          !item.delete &&
+          !item.done && (
+            <List.Item>
+              <Space>
+                <Typography.Text mark>[{index + 1}]</Typography.Text>{" "}
+                {item.value}
+                <Button onClick={() => delItem(item)} type="primary">
+                  删除
+                </Button>
+                <Button onClick={() => hasChecked(item)} type="primary">
+                  已办
+                </Button>
+              </Space>
+            </List.Item>
+          )
+        }
+      />
+      <Divider orientation="left" className={style.Done}>
+        已办事项
+      </Divider>
+      <List
+        className={style.List}
+        bordered
+        dataSource={todoItems}
+        renderItem={(item, index) =>
+          item.done && (
+            <List.Item>
+              <Space>
+                <Typography.Text delete>
+                  [{index + 1}] {item.value}
+                </Typography.Text>
+              </Space>
+            </List.Item>
+          )
+        }
+      />
     </div>
   );
 }
