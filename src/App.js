@@ -3,7 +3,7 @@ import { Input, List, Button, Typography, Space, Divider } from "antd";
 import style from "./app.module.css";
 import axios from "axios";
 const { Search } = Input;
-const baseUrl = "wwww.todoapi.com/items";
+const baseUrl = "todoapi.com/items";
 function App() {
   const [todoItems, setTodoItems] = useState([]);
   const [waitList, setWaitList] = useState([]);
