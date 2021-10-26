@@ -3,15 +3,21 @@ import { Input, List, Button, Typography, Space, Divider } from "antd";
 import style from "./app.module.css";
 import axios from "axios";
 const { Search } = Input;
-
+const baseUrl = "wwww.todoapi.com/items";
 function App() {
   const [todoItems, setTodoItems] = useState([]);
+  const [waitList, setWaitList] = useState([]);
+  const [doneList, setDoneList] = useState([]);
   const inputRef = useRef(null);
   useEffect(() => {
-    axios.get("http://localhost:8000/items").then((res) => {
+    axios.get(baseUrl).then((res) => {
       setTodoItems([...res.data]);
     });
   }, []);
+  useEffect(() => {
+    setWaitList([...todoItems.filter((item) => !item.delete && !item.done)]);
+    setDoneList([...todoItems.filter((item) => item.done)]);
+  }, [todoItems]);
   //添加事件
   const addItem = (value) => {
     const newItem = {
@@ -20,8 +26,10 @@ function App() {
       done: false,
       delete: false,
     };
+    // inputRef.current.input.value = "";
+    value = "";
     axios
-      .post("http://localhost:8000/items", {
+      .post(baseUrl, {
         todoItem: newItem,
       })
       .then((res) => {
@@ -32,13 +40,13 @@ function App() {
   //删除事件
   const delItem = (item) => {
     axios
-      .delete("http://localhost:8000/items", {
+      .delete(baseUrl, {
         data: {
           id: item.id,
         },
       })
       .then((res) => {
-        axios.get("http://localhost:8000/items").then((res) => {
+        axios.get(baseUrl).then((res) => {
           setTodoItems([...res.data]);
         });
       });
@@ -46,11 +54,11 @@ function App() {
 
   const hasChecked = (item) => {
     axios
-      .put("http://localhost:8000/items", {
+      .put(baseUrl, {
         id: item.id,
       })
       .then((res) => {
-        axios.get("http://localhost:8000/items").then((res) => {
+        axios.get(baseUrl).then((res) => {
           setTodoItems([...res.data]);
         });
       });
@@ -71,9 +79,13 @@ function App() {
         代办事项
       </Divider>
       <List
+        pagination={{
+          pageSize: 5,
+          size: "small",
+        }}
         className={style.List}
         bordered
-        dataSource={todoItems}
+        dataSource={waitList}
         renderItem={(item, index) =>
           !item.delete &&
           !item.done && (
@@ -96,9 +108,13 @@ function App() {
         已办事项
       </Divider>
       <List
+        pagination={{
+          pageSize: 5,
+          size: "small",
+        }}
         className={style.List}
         bordered
-        dataSource={todoItems}
+        dataSource={doneList}
         renderItem={(item, index) =>
           item.done && (
             <List.Item>
